@@ -11,18 +11,37 @@ import java.util.List;
  */
 public class ImageConstructionPane {
 
-  private static final int DETECTION_ZONE_REDUCTION_FACTOR = 40;
+  private static final int DETECTION_ZONE_REDUCTION_FACTOR = 45;
+  private static final int DETECTION_ZONE_REDUCTION_FACTOR_FOR_PUZZLE_PANE = 30;
 
   private final Pane pane;
-  private List<Puzzle> puzzles;
+  private final List<Puzzle> puzzles;
+  private final List<Puzzle> rightPuzzlesOrder;
 
   private int startX = 0;
   private int startY = 0;
 
-
   public ImageConstructionPane(Pane pane) {
     this.pane = pane;
     puzzles = new ArrayList<>();
+    rightPuzzlesOrder = new ArrayList<>();
+  }
+
+  public void setRightPuzzlesOrder(List<Puzzle> puzzlesOrder) {
+    for (var puzzle : puzzlesOrder) {
+      rightPuzzlesOrder.add(new Puzzle(puzzle));
+    }
+  }
+
+  public boolean checkConstructedImageCorrectness() {
+    for (int i = 0; i < rightPuzzlesOrder.size(); i++) {
+      var isRightPicture = rightPuzzlesOrder.get(i).getImage() == puzzles.get(i).getImage();
+      var isRightRotation = rightPuzzlesOrder.get(i).getRotation() == puzzles.get(i).getRotation();
+      if (!isRightPicture || !isRightRotation) {
+        return false;
+      }
+    }
+    return true;
   }
 
   /**
@@ -54,19 +73,38 @@ public class ImageConstructionPane {
   }
 
   /**
-   * Changes properties of the puzzle according to the selected puzzle.
+   * Changes properties of the puzzles according to the selected puzzle.
    *
    * @param currentPuzzle it's current puzzle
    */
-  private void changePropertiesOfOverlappedPuzzle(Puzzle currentPuzzle) {
-    final var centerX = currentPuzzle.getCenterX();
-    final var centerY = currentPuzzle.getCenterY();
-    final var transforms = currentPuzzle.getView().getTransforms();
+  private void changePropertiesOfOverlappedPuzzles(Puzzle currentPuzzle) {
+    final var curCenterX = currentPuzzle.getCenterX();
+    final var curCenterY = currentPuzzle.getCenterY();
+    final var curTransforms = currentPuzzle.getView().getTransforms();
 
-    transforms.removeAll(transforms);
-    currentPuzzle.getView().setImage(Puzzle.getSelectedPuzzle().getView().getImage());
-    currentPuzzle.setRotation(Puzzle.getSelectedPuzzle().getRotation());
-    transforms.add(new Rotate(currentPuzzle.getRotation(), centerX, centerY));
+    final var selectedPuzzle = Puzzle.getSelectedPuzzle();
+    final var selectedCenterX = selectedPuzzle.getCenterX();
+    final var selectedCenterY = selectedPuzzle.getCenterY();
+    final var selectedTransforms = selectedPuzzle.getView().getTransforms();
+
+    var tempImage = currentPuzzle.getImage();
+    var tempRotation = currentPuzzle.getRotation();
+
+
+    curTransforms.removeAll(curTransforms);
+    selectedTransforms.removeAll(selectedTransforms);
+
+    currentPuzzle.setImage(selectedPuzzle.getImage());
+    selectedPuzzle.setImage(tempImage);
+
+    currentPuzzle.setRotation(selectedPuzzle.getRotation());
+    curTransforms.add(new Rotate(currentPuzzle.getRotation(), curCenterX, curCenterY));
+
+    selectedPuzzle.setRotation(tempRotation);
+    selectedTransforms.add(new Rotate(selectedPuzzle.getRotation(), selectedCenterX, selectedCenterY));
+
+    currentPuzzle.setActive(true);
+    currentPuzzle.makeSelected();
   }
 
   /**
@@ -76,9 +114,15 @@ public class ImageConstructionPane {
    */
   private void checkOverlappingWithSelectedPuzzle(Puzzle currentPuzzle) {
     var curPuzzleCord = currentPuzzle.calculateGlobalCords();
-    var factor = DETECTION_ZONE_REDUCTION_FACTOR;
 
     currentPuzzle.checkIfPuzzlesOverlapListener(curPuzzleCord, ((rec1, rec2) -> {
+      int factor;
+      if (pane == Puzzle.getSelectedPuzzle().getView().getParent()) {
+        factor = DETECTION_ZONE_REDUCTION_FACTOR;
+      }
+      else {
+        factor = DETECTION_ZONE_REDUCTION_FACTOR_FOR_PUZZLE_PANE;
+      }
       boolean widthIsPositive = Math.min(rec1[2] - factor, rec2[2] - factor) >
               Math.max(rec1[0] + factor, rec2[0] + factor);
 
@@ -86,7 +130,7 @@ public class ImageConstructionPane {
               Math.max(rec1[1] + factor, rec2[1] + factor);
 
       if(widthIsPositive && heightIsPositive) {
-        changePropertiesOfOverlappedPuzzle(currentPuzzle);
+        changePropertiesOfOverlappedPuzzles(currentPuzzle);
       }
     }));
   }

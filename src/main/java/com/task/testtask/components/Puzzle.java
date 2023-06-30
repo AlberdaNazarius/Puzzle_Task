@@ -12,13 +12,14 @@ import lombok.Getter;
  * This class represents puzzle, that used for constructing final image.
  */
 @Getter
-public class Puzzle {
+public class Puzzle implements Cloneable {
 
   private static final ObjectProperty<Puzzle> selectedPuzzle = new SimpleObjectProperty<>();
   private static final ObjectProperty<Boolean> isReleased = new SimpleObjectProperty<>();
   private static final double DEFAULT_OPACITY = 0.5;
 
-  private final ObjectProperty<Integer> rotation = new SimpleObjectProperty<>();
+  private final ObjectProperty<Integer> rotation;
+  private final ObjectProperty<Boolean> isActive;
   private final ImageView view;
 
   private double xOffset;
@@ -27,22 +28,23 @@ public class Puzzle {
   private double originPosY;
   private Direction direction;
 
+
   /**
    * This constructor used to create puzzles that located in the PuzzlePanel.
    *
    * @param image the image of the puzzle
    */
   public Puzzle(Image image) {
+    rotation = new SimpleObjectProperty<>();
+    isActive = new SimpleObjectProperty<>();
     view = new ImageView(image);
+
     view.setOpacity(DEFAULT_OPACITY);
     direction = Direction.TOP;
     rotation.set(0);
+    isActive.set(true);
 
-    mousePressedListener();
-    dragPuzzleListener();
-    returnToOriginPosListener();
-    checkPuzzleSelection();
-    checkChangeInRotation();
+    addAllListeners();
   }
 
   /**
@@ -52,12 +54,32 @@ public class Puzzle {
    * @param y coordinate of the ImageView
    */
   public Puzzle(int x, int y) {
+    rotation = new SimpleObjectProperty<>();
+    isActive = new SimpleObjectProperty<>();
     view = new ImageView();
+
     view.setX(x);
     view.setY(y);
     direction = Direction.TOP;
     rotation.set(0);
-    checkChangeInRotation();
+    isActive.set(false);
+
+    addAllListeners();
+  }
+
+  /**
+   * It's copy constructor
+   * @param puzzle {@link Puzzle} which values we want to copy
+   */
+  public Puzzle(Puzzle puzzle) {
+    this.isActive = new SimpleObjectProperty<>();
+    this.rotation = new SimpleObjectProperty<>(puzzle.rotation.get());
+    this.view = new ImageView(puzzle.view.getImage());
+    this.xOffset = puzzle.xOffset;
+    this.yOffset = puzzle.yOffset;
+    this.originPosX = puzzle.originPosX;
+    this.originPosY = puzzle.originPosY;
+    this.direction = puzzle.direction;
   }
 
   public static Puzzle getSelectedPuzzle() {
@@ -78,10 +100,16 @@ public class Puzzle {
   }
 
   public double getCenterX() {
+    if (this == selectedPuzzle.get()) {
+      return this.originPosX + this.getWidth() / 2;
+    }
     return this.getX() + this.getWidth() / 2;
   }
 
   public double getCenterY() {
+    if (this == selectedPuzzle.get()) {
+      return this.originPosY + this.getHeight() / 2;
+    }
     return this.getY() + this.getHeight() / 2;
   }
 
@@ -97,6 +125,10 @@ public class Puzzle {
     return view.getY();
   }
 
+  public Image getImage() {
+    return view.getImage();
+  }
+
   public void setWidth(double width) {
     view.setFitWidth(width);
   }
@@ -105,8 +137,18 @@ public class Puzzle {
     view.setFitHeight(height);
   }
 
+  public void makeSelected() {
+    selectedPuzzle.set(this);
+    this.originPosX = this.getX();
+    this.originPosY = this.getY();
+  }
+
   public void setRotation(int value) {
     rotation.set(value);
+  }
+
+  public void setActive(boolean value) {
+    isActive.set(value);
   }
 
   public void setImage(Image image) {
@@ -169,11 +211,22 @@ public class Puzzle {
     return new double[] {startX, startY, endX, endY};
   }
 
+  public void addAllListeners() {
+    mousePressedListener();
+    dragPuzzleListener();
+    returnToOriginPosListener();
+    checkPuzzleSelection();
+    checkChangeInRotation();
+    checkIsActive();
+  }
+
   public void checkIfPuzzlesOverlapListener(double[] rec1, CheckOverlapping checkOverlapping) {
     isReleased.addListener((observableValue, oldValue, newValue) -> {
-      final var rec2 = selectedPuzzle.get().calculateGlobalCords();
-      checkOverlapping.checkRectanglesOverlap(rec1, rec2);
-      isReleased.set(false);
+      if (selectedPuzzle.get() != this) {
+        final var rec2 = selectedPuzzle.get().calculateGlobalCords();
+        checkOverlapping.checkRectanglesOverlap(rec1, rec2);
+        isReleased.set(false);
+      }
     });
   }
 
@@ -200,37 +253,56 @@ public class Puzzle {
 
   private void mousePressedListener() {
     view.setOnMousePressed (e -> {
-      xOffset = e.getX() - view.getX();
-      yOffset = e.getY() - view.getY();
+      if (isActive.get()) {
+        xOffset = e.getX() - view.getX();
+        yOffset = e.getY() - view.getY();
 
-      originPosX = view.getX();
-      originPosY = view.getY();
+        originPosX = view.getX();
+        originPosY = view.getY();
 
-      view.toFront();
-      selectedPuzzle.set(this);
+        view.toFront();
+        selectedPuzzle.set(this);
+      }
     });
   }
 
   private void checkPuzzleSelection() {
     selectedPuzzle.addListener((observableValue, oldValue, newValue) -> {
-      view.setOpacity(DEFAULT_OPACITY);
-      selectedPuzzle.get().getView().setOpacity(1);
+      if (isActive.get()) {
+        view.setOpacity(DEFAULT_OPACITY);
+        selectedPuzzle.get().getView().setOpacity(1);
+      }
     });
   }
 
   private void dragPuzzleListener() {
     view.setOnMouseDragged(e -> {
-      view.setX(e.getX() - xOffset);
-      view.setY(e.getY() - yOffset);
+      if (isActive.get()) {
+        view.setX(e.getX() - xOffset);
+        view.setY(e.getY() - yOffset);
+      }
     });
   }
 
   private void returnToOriginPosListener() {
     view.setOnMouseReleased(e -> {
-      isReleased.set(true);
+      if (isActive.get()) {
+        isReleased.set(true);
 
-      view.setX(originPosX);
-      view.setY(originPosY);
+        view.setX(originPosX);
+        view.setY(originPosY);
+      }
+    });
+  }
+
+  private void checkIsActive() {
+    isActive.addListener((observableValue, oldValue, newValue) -> {
+      if (Boolean.FALSE.equals(newValue)) {
+        selectedPuzzle.get().getView().setVisible(false);
+      }
+      else {
+        this.getView().setVisible(true);
+      }
     });
   }
 }

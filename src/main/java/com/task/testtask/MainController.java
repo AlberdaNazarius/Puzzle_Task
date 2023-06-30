@@ -5,6 +5,7 @@ import com.task.testtask.components.Puzzle;
 import com.task.testtask.components.PuzzlePane;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
+import javafx.scene.control.Label;
 import javafx.scene.image.Image;
 import javafx.scene.image.PixelReader;
 import javafx.scene.image.WritableImage;
@@ -21,6 +22,14 @@ public class MainController implements Initializable {
   private Pane pane;
   @FXML
   private Pane imageConstructionPane;
+  @FXML
+  private Pane congratulationPane;
+  @FXML
+  private Pane shadowPane;
+  @FXML
+  private Label congratulationLabel;
+
+  ImageConstructionPane constructionPane;
 
   private static final int ROW_COUNT = 4;
   private static final int COL_COUNT = 4;
@@ -34,10 +43,15 @@ public class MainController implements Initializable {
     final var image = new Image(PATH);
     final var puzzles = cutPuzzlesFromImage(image, ROW_COUNT, COL_COUNT);
     final var puzzlePane = new PuzzlePane(pane);
-    final var constructionPane = new ImageConstructionPane(imageConstructionPane);
+
+    congratulationPane.setVisible(false);
+    congratulationLabel.setVisible(false);
+    shadowPane.setVisible(false);
 
     puzzlePane.addPuzzles(puzzles);
+    constructionPane = new ImageConstructionPane(imageConstructionPane);
     constructionPane.divideOnBlocks(ROW_COUNT, COL_COUNT);
+    constructionPane.setRightPuzzlesOrder(puzzles);
   }
 
   public List<Puzzle> cutPuzzlesFromImage(Image image, int rowCount, int colCount) {
@@ -82,5 +96,13 @@ public class MainController implements Initializable {
 
     selectedPuzzle.setRotation(selectedPuzzle.getRotation() + ROTATION_ANGLE);
     selectedPuzzleRotation.add(new Rotate(ROTATION_ANGLE, centerX, centerY));
+  }
+
+  @FXML
+  protected void submit() {
+    final var isImageCorrect = constructionPane.checkConstructedImageCorrectness();
+    congratulationPane.setVisible(isImageCorrect);
+    congratulationLabel.setVisible(isImageCorrect);
+    shadowPane.setVisible(isImageCorrect);
   }
 }

@@ -9,7 +9,31 @@
 
 <AnchorPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="864.0" prefWidth="1338.0" xmlns="http://javafx.com/javafx/18" xmlns:fx="http://javafx.com/fxml/1" fx:controller="com.task.testtask.MainController">
    <children>
-      <Pane fx:id="imageConstructionPane" layoutX="34.0" layoutY="120.0" prefHeight="652.0" prefWidth="625.0" style="-fx-background-color: grey;">
+      <Label layoutX="1038.0" layoutY="120.0" text="Puzzles" AnchorPane.rightAnchor="231.0" AnchorPane.topAnchor="120.0">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      <Label layoutX="383.0" layoutY="32.0" text="Image" AnchorPane.leftAnchor="383.0" AnchorPane.topAnchor="32.0">
+         <font>
+            <Font name="System Bold" size="20.0" />
+         </font>
+      </Label>
+      <Button layoutX="995.0" layoutY="607.0" mnemonicParsing="false" onAction="#rotatePuzzleToTheLeft" prefHeight="53.0" prefWidth="69.0" text="Left" AnchorPane.rightAnchor="274.0" AnchorPane.topAnchor="607.0">
+         <font>
+            <Font name="System Bold" size="17.0" />
+         </font>
+      </Button>
+      <Button layoutX="1100.0" layoutY="607.0" mnemonicParsing="false" onAction="#rotatePuzzleToTheRight" prefHeight="53.0" prefWidth="69.0" text="Right" AnchorPane.rightAnchor="169.0" AnchorPane.topAnchor="607.0">
+         <font>
+            <Font name="System Bold" size="17.0" />
+         </font>
+      </Button>
+      <Button layoutX="374.0" layoutY="736.0" mnemonicParsing="false" onAction="#submit" prefHeight="38.0" prefWidth="100.0" text="Submit" AnchorPane.leftAnchor="374.0" AnchorPane.topAnchor="736.0">
+         <font>
+            <Font name="System Bold" size="16.0" />
+         </font></Button>
+      <Pane fx:id="imageConstructionPane" layoutX="141.0" layoutY="89.0" prefHeight="608.0" prefWidth="625.0" style="-fx-background-color: #dedede;" AnchorPane.leftAnchor="141.0" AnchorPane.topAnchor="89.0">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
@@ -17,17 +41,7 @@
             <Insets left="5.0" top="5.0" />
          </padding>
       </Pane>
-      <Label layoutX="981.0" layoutY="63.0" text="Puzzles" AnchorPane.rightAnchor="292.0">
-         <font>
-            <Font name="System Bold" size="20.0" />
-         </font>
-      </Label>
-      <Label layoutX="317.0" layoutY="63.0" text="Image">
-         <font>
-            <Font name="System Bold" size="20.0" />
-         </font>
-      </Label>
-      <Pane fx:id="pane" layoutX="710.0" layoutY="120.0" prefHeight="652.0" prefWidth="607.0" style="-fx-background-color: grey;" AnchorPane.rightAnchor="21.0" AnchorPane.topAnchor="120.0">
+      <Pane fx:id="pane" layoutX="865.0" layoutY="177.0" prefHeight="406.0" prefWidth="416.0" style="-fx-background-color: #e6e6e6;" AnchorPane.rightAnchor="57.0" AnchorPane.topAnchor="177.0">
          <opaqueInsets>
             <Insets />
          </opaqueInsets>
@@ -35,15 +49,25 @@
             <Insets left="5.0" top="5.0" />
          </padding>
       </Pane>
-      <Button layoutX="971.0" layoutY="787.0" mnemonicParsing="false" onAction="#rotatePuzzleToTheLeft" prefHeight="53.0" prefWidth="69.0" text="Left">
-         <font>
-            <Font name="System Bold" size="12.0" />
-         </font>
-      </Button>
-      <Button layoutX="1053.0" layoutY="787.0" mnemonicParsing="false" onAction="#rotatePuzzleToTheRight" prefHeight="53.0" prefWidth="69.0" text="Right">
-         <font>
-            <Font name="System Bold" size="12.0" />
-         </font>
-      </Button>
+      <Pane fx:id="shadowPane" opacity="0.66" prefHeight="864.0" prefWidth="1338.0" style="-fx-background-color: lightgrey;" visible="false" AnchorPane.leftAnchor="0.0" AnchorPane.topAnchor="0.0" />
+      <Pane fx:id="congratulationPane" layoutX="492.0" layoutY="204.0" prefHeight="304.0" prefWidth="438.0" style="-fx-background-color: white;">
+         <children>
+            <Label fx:id="congratulationLabel" layoutX="94.0" layoutY="55.0" text="Congratulation!!!">
+               <font>
+                  <Font name="System Bold" size="31.0" />
+               </font>
+            </Label>
+            <Button layoutX="50.0" layoutY="205.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="100.0" text="Restart">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Button>
+            <Button layoutX="295.0" layoutY="205.0" mnemonicParsing="false" prefHeight="53.0" prefWidth="100.0" text="Submit">
+               <font>
+                  <Font name="System Bold" size="16.0" />
+               </font>
+            </Button>
+         </children>
+      </Pane>
    </children>
 </AnchorPane>
