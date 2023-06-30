@@ -8,8 +8,6 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import lombok.Getter;
 
-import java.util.Arrays;
-
 /**
  * This class represents puzzle, that used for constructing final image.
  */
@@ -18,18 +16,16 @@ public class Puzzle {
 
   private static final ObjectProperty<Puzzle> selectedPuzzle = new SimpleObjectProperty<>();
   private static final ObjectProperty<Boolean> isReleased = new SimpleObjectProperty<>();
-
   private static final double DEFAULT_OPACITY = 0.5;
 
   private final ObjectProperty<Integer> rotation = new SimpleObjectProperty<>();
   private final ImageView view;
 
-  private Direction direction;
-
   private double xOffset;
   private double yOffset;
   private double originPosX;
   private double originPosY;
+  private Direction direction;
 
   /**
    * This constructor used to create puzzles that located in the PuzzlePanel.
@@ -52,14 +48,11 @@ public class Puzzle {
   /**
    * It's constructor for puzzles that used in final picture.
    *
-   * @param image
    * @param x coordinate of the ImageView
    * @param y coordinate of the ImageView
    */
-  public Puzzle(Image image, int x, int y) {
-    // TODO remove next line
-    view = new ImageView(image);
-
+  public Puzzle(int x, int y) {
+    view = new ImageView();
     view.setX(x);
     view.setY(y);
     direction = Direction.TOP;
@@ -69,10 +62,6 @@ public class Puzzle {
 
   public static Puzzle getSelectedPuzzle() {
     return selectedPuzzle.get();
-  }
-
-  public void setImage(Image image) {
-    view.imageProperty().set(image);
   }
 
   public void changePos(int x, int y) {
@@ -86,6 +75,18 @@ public class Puzzle {
 
   public double getHeight() {
     return view.getFitHeight();
+  }
+
+  public double getCenterX() {
+    return this.getX() + this.getWidth() / 2;
+  }
+
+  public double getCenterY() {
+    return this.getY() + this.getHeight() / 2;
+  }
+
+  public int getRotation() {
+    return rotation.get();
   }
 
   public double getX() {
@@ -104,8 +105,17 @@ public class Puzzle {
     view.setFitHeight(height);
   }
 
+  public void setRotation(int value) {
+    rotation.set(value);
+  }
+
+  public void setImage(Image image) {
+    view.imageProperty().set(image);
+  }
+
   /**
-   * This method calculates the start and end global coordinates of the current puzzle.
+   * This method calculates the start and end global coordinates of the current puzzle taking into account direction of
+   * that puzzle.
    *
    * @return array with the global coordinates of the puzzle
    */
@@ -116,6 +126,9 @@ public class Puzzle {
     double startY = 0;
     double endX = 0;
     double endY = 0;
+    
+    double width = puzzle.getWidth();
+    double height = puzzle.getHeight();
 
     var globalPosition = puzzle.getView().localToScene(
             puzzle.getView().getLayoutBounds().getMinX(),
@@ -125,21 +138,32 @@ public class Puzzle {
       startX = globalPosition.getX();
       startY = globalPosition.getY();
 
-      endX = startX + puzzle.getWidth();
-      endY = startY + puzzle.getHeight();
+      endX = startX + width;
+      endY = startY + height;
     }
 
     if (direction == Direction.BOTTOM) {
-      startX = globalPosition.getX() - puzzle.getWidth();
-      startY = globalPosition.getY() - puzzle.getHeight();
+      startX = globalPosition.getX() - width;
+      startY = globalPosition.getY() - height;
 
       endX = globalPosition.getX();
       endY = globalPosition.getY();
     }
 
-    if (direction == Direction.LEFT || direction == Direction.RIGHT) {
+    if (direction == Direction.LEFT) {
       startX = globalPosition.getX();
+      startY = globalPosition.getY() - height;
+
+      endX = globalPosition.getX() + width;
+      endY = globalPosition.getY();
+    }
+
+    if (direction == Direction.RIGHT) {
+      startX = globalPosition.getX() - width;
       startY = globalPosition.getY();
+
+      endX = globalPosition.getX();
+      endY = globalPosition.getY() + height;
     }
 
     return new double[] {startX, startY, endX, endY};
@@ -172,7 +196,6 @@ public class Puzzle {
     } else if (angle == -90 || angle == 270) {
       direction = Direction.LEFT;
     }
-    System.out.println("Current Direction: " + direction);
   }
 
   private void mousePressedListener() {

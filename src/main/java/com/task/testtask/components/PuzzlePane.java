@@ -4,6 +4,9 @@ import javafx.scene.layout.Pane;
 
 import java.util.List;
 
+/**
+ * It's class of a pane that contains of puzzles.
+ */
 public class PuzzlePane {
 
   private static final int STARTED_PUZZLE_POS_X = 5;
@@ -20,6 +23,11 @@ public class PuzzlePane {
     this.pane = pane;
   }
 
+  /**
+   * This method used to locate puzzles in proper order with right indentations.
+   *
+   * @param puzzles array of puzzles that would be located on the pane
+   */
   public void addPuzzles(List<Puzzle> puzzles) {
     this.puzzles = puzzles;
 
