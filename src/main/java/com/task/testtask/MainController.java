@@ -1,8 +1,8 @@
 package com.task.testtask;
 
-import com.task.testtask.components.ImageConstructionPane;
 import com.task.testtask.components.Puzzle;
-import com.task.testtask.components.PuzzlePane;
+import com.task.testtask.components.panes.ImageConstructionPane;
+import com.task.testtask.components.panes.PuzzlePane;
 import javafx.fxml.FXML;
 import javafx.fxml.Initializable;
 import javafx.scene.control.Label;
@@ -12,10 +12,14 @@ import javafx.scene.image.WritableImage;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Rotate;
 
+import java.io.File;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.ResourceBundle;
+
+import static com.task.testtask.Data.readImageFromFile;
+import static com.task.testtask.Data.saveImageToFile;
 
 public class MainController implements Initializable {
   @FXML
@@ -29,32 +33,46 @@ public class MainController implements Initializable {
   @FXML
   private Label congratulationLabel;
 
-  ImageConstructionPane constructionPane;
-
   private static final int ROW_COUNT = 4;
   private static final int COL_COUNT = 4;
   private static final int ROTATION_ANGLE = 90;
-  private static final String PATH = "https://static.vecteezy.com/system/resources/previews/009/273/280/" +
-          "non_2x/concept-of-loneliness-and-disappointment-in-love-sad-man-sitting-element-of-the-pictur" +
-          "e-is-decorated-by-nasa-free-photo.jpg";
+  private static final String PATH = "https://cdn.pixabay.com/photo/2015/04/23/22/00/tree-736885_1280.jpg";
+  private static final String DIRECTORY_PATH = "src/main/resources/images";
+
+  private Image image;
+  private List<Puzzle> puzzles;
+  private PuzzlePane puzzlePane;
+  private ImageConstructionPane constructionPane;
 
   @Override
   public void initialize(URL url, ResourceBundle resourceBundle) {
-    final var image = new Image(PATH);
-    final var puzzles = cutPuzzlesFromImage(image, ROW_COUNT, COL_COUNT);
-    final var puzzlePane = new PuzzlePane(pane);
-
-    congratulationPane.setVisible(false);
-    congratulationLabel.setVisible(false);
-    shadowPane.setVisible(false);
-
-    puzzlePane.addPuzzles(puzzles);
+    image = new Image(PATH);
+    puzzlePane = new PuzzlePane(pane);
     constructionPane = new ImageConstructionPane(imageConstructionPane);
-    constructionPane.divideOnBlocks(ROW_COUNT, COL_COUNT);
-    constructionPane.setRightPuzzlesOrder(puzzles);
+    defaultSettings();
   }
 
-  public List<Puzzle> cutPuzzlesFromImage(Image image, int rowCount, int colCount) {
+  private void savePuzzlesToFile() {
+    for (int i = 0; i < puzzles.size(); i++) {
+      final var curImage = constructionPane.getRightPuzzlesOrder().get(i).getImage();
+      final var fileName = String.format("image_%d.png", i+1);
+      final var filePath = DIRECTORY_PATH + File.separator + fileName;
+      saveImageToFile(curImage, filePath);
+    }
+  }
+
+  private List<Puzzle> readPuzzlesFromFile() {
+    List<Puzzle> puzzlesList = new ArrayList<>();
+    for (int i = 0; i < ROW_COUNT*COL_COUNT; i++) {
+      String fileName = String.format("image_%d.png", i+1);
+      String filePath = DIRECTORY_PATH + File.separator + fileName;
+      Image curImage = readImageFromFile(filePath);
+      puzzlesList.add(new Puzzle(curImage));
+    }
+    return puzzlesList;
+  }
+
+  private List<Puzzle> cutPuzzlesFromImage(Image image, int rowCount, int colCount) {
     List<Puzzle> tiles = new ArrayList<>();
     PixelReader pixelReader = image.getPixelReader();
 
@@ -72,6 +90,17 @@ public class MainController implements Initializable {
       }
     }
     return tiles;
+  }
+
+  private void defaultSettings() {
+    congratulationPane.setVisible(false);
+    congratulationLabel.setVisible(false);
+    shadowPane.setVisible(false);
+
+    puzzles = cutPuzzlesFromImage(image, ROW_COUNT, COL_COUNT);
+    constructionPane.divideOnBlocks(ROW_COUNT, COL_COUNT);
+    constructionPane.setRightPuzzlesOrder(puzzles);
+    puzzlePane.addPuzzles(puzzles);
   }
 
   @FXML
@@ -104,5 +133,12 @@ public class MainController implements Initializable {
     congratulationPane.setVisible(isImageCorrect);
     congratulationLabel.setVisible(isImageCorrect);
     shadowPane.setVisible(isImageCorrect);
+  }
+
+  @FXML
+  protected void restart() {
+    puzzlePane.toDefault();
+    constructionPane.toDefault();
+    defaultSettings();
   }
 }

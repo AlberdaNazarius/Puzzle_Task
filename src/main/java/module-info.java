@@ -1,5 +1,6 @@
 module com.task.testtask {
   requires javafx.controls;
+  requires javafx.swing;
   requires javafx.fxml;
   requires java.desktop;
   requires lombok;

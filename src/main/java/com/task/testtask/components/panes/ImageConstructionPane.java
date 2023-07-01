@@ -1,5 +1,7 @@
-package com.task.testtask.components;
+package com.task.testtask.components.panes;
 
+import com.task.testtask.components.Puzzle;
+import com.task.testtask.interfaces.Restartable;
 import javafx.scene.layout.Pane;
 import javafx.scene.transform.Rotate;
 
@@ -9,14 +11,14 @@ import java.util.List;
 /**
  * It's a class of a pane that use puzzles to construct an image.
  */
-public class ImageConstructionPane {
+public class ImageConstructionPane implements Restartable {
 
   private static final int DETECTION_ZONE_REDUCTION_FACTOR = 45;
   private static final int DETECTION_ZONE_REDUCTION_FACTOR_FOR_PUZZLE_PANE = 30;
 
   private final Pane pane;
-  private final List<Puzzle> puzzles;
   private final List<Puzzle> rightPuzzlesOrder;
+  private final List<Puzzle> puzzles;
 
   private int startX = 0;
   private int startY = 0;
@@ -31,6 +33,10 @@ public class ImageConstructionPane {
     for (var puzzle : puzzlesOrder) {
       rightPuzzlesOrder.add(new Puzzle(puzzle));
     }
+  }
+
+  public List<Puzzle> getRightPuzzlesOrder() {
+    return rightPuzzlesOrder;
   }
 
   public boolean checkConstructedImageCorrectness() {
@@ -133,5 +139,17 @@ public class ImageConstructionPane {
         changePropertiesOfOverlappedPuzzles(currentPuzzle);
       }
     }));
+  }
+
+  @Override
+  public void toDefault() {
+    startX = 0;
+    startY = 0;
+    for (var puzzle : puzzles) {
+      puzzle.removeCheckOverlapListener();
+    }
+    pane.getChildren().clear();
+    puzzles.clear();
+    rightPuzzlesOrder.clear();
   }
 }

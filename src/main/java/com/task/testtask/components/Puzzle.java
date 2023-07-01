@@ -4,6 +4,7 @@ import com.task.testtask.enums.Direction;
 import com.task.testtask.interfaces.CheckOverlapping;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import lombok.Getter;
@@ -12,8 +13,7 @@ import lombok.Getter;
  * This class represents puzzle, that used for constructing final image.
  */
 @Getter
-public class Puzzle implements Cloneable {
-
+public class Puzzle {
   private static final ObjectProperty<Puzzle> selectedPuzzle = new SimpleObjectProperty<>();
   private static final ObjectProperty<Boolean> isReleased = new SimpleObjectProperty<>();
   private static final double DEFAULT_OPACITY = 0.5;
@@ -22,12 +22,12 @@ public class Puzzle implements Cloneable {
   private final ObjectProperty<Boolean> isActive;
   private final ImageView view;
 
+  private ChangeListener<Boolean> listener;
   private double xOffset;
   private double yOffset;
   private double originPosX;
   private double originPosY;
   private Direction direction;
-
 
   /**
    * This constructor used to create puzzles that located in the PuzzlePanel.
@@ -221,13 +221,18 @@ public class Puzzle implements Cloneable {
   }
 
   public void checkIfPuzzlesOverlapListener(double[] rec1, CheckOverlapping checkOverlapping) {
-    isReleased.addListener((observableValue, oldValue, newValue) -> {
+    listener = (observableValue, oldValue, newValue) -> {
       if (selectedPuzzle.get() != this) {
         final var rec2 = selectedPuzzle.get().calculateGlobalCords();
         checkOverlapping.checkRectanglesOverlap(rec1, rec2);
         isReleased.set(false);
       }
-    });
+    };
+    isReleased.addListener(listener);
+  }
+
+  public void removeCheckOverlapListener() {
+    isReleased.removeListener(listener);
   }
 
   private void checkChangeInRotation() {
@@ -268,7 +273,7 @@ public class Puzzle implements Cloneable {
 
   private void checkPuzzleSelection() {
     selectedPuzzle.addListener((observableValue, oldValue, newValue) -> {
-      if (isActive.get()) {
+      if (isActive.get() && selectedPuzzle.get() != null) {
         view.setOpacity(DEFAULT_OPACITY);
         selectedPuzzle.get().getView().setOpacity(1);
       }
