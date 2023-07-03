@@ -14,9 +14,9 @@ import lombok.Getter;
  */
 @Getter
 public class Puzzle {
+  public static final double DEFAULT_OPACITY = 0.5;
   private static final ObjectProperty<Puzzle> selectedPuzzle = new SimpleObjectProperty<>();
   private static final ObjectProperty<Boolean> isReleased = new SimpleObjectProperty<>();
-  private static final double DEFAULT_OPACITY = 0.5;
 
   private final ObjectProperty<Integer> rotation;
   private final ObjectProperty<Boolean> isActive;

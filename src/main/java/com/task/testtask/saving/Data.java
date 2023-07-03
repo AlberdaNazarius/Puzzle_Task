@@ -1,4 +1,4 @@
-package com.task.testtask;
+package com.task.testtask.saving;
 
 import javafx.embed.swing.SwingFXUtils;
 import javafx.scene.image.Image;

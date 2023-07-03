@@ -39,6 +39,10 @@ public class ImageConstructionPane implements Restartable {
     return rightPuzzlesOrder;
   }
 
+  public List<Puzzle> getPuzzles() {
+    return puzzles;
+  }
+
   public boolean checkConstructedImageCorrectness() {
     for (int i = 0; i < rightPuzzlesOrder.size(); i++) {
       var isRightPicture = rightPuzzlesOrder.get(i).getImage() == puzzles.get(i).getImage();
