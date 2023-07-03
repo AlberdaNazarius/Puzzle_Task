@@ -13,8 +13,10 @@ import java.util.List;
  */
 public class ImageConstructionPane implements Restartable {
 
-  private static final int DETECTION_ZONE_REDUCTION_FACTOR = 45;
-  private static final int DETECTION_ZONE_REDUCTION_FACTOR_FOR_PUZZLE_PANE = 30;
+  private static final double DETECTION_ZONE_REDUCTION_FACTOR = 3.3;
+
+  private double reductionFactorX;
+  private double reductionFactorY;
 
   private final Pane pane;
   private final List<Puzzle> rightPuzzlesOrder;
@@ -63,6 +65,10 @@ public class ImageConstructionPane implements Restartable {
   public void divideOnBlocks(int rowCount, int colCount) {
     final var blockWidth = pane.getPrefWidth() / colCount;
     final var blockHeight = pane.getPrefHeight() / rowCount;
+
+    reductionFactorX = blockWidth / DETECTION_ZONE_REDUCTION_FACTOR;
+    reductionFactorY = blockHeight / DETECTION_ZONE_REDUCTION_FACTOR;
+
 
     for (int i = 0; i < rowCount; i++) {
       for (int j = 0; j < colCount; j++) {
@@ -126,18 +132,21 @@ public class ImageConstructionPane implements Restartable {
     var curPuzzleCord = currentPuzzle.calculateGlobalCords();
 
     currentPuzzle.checkIfPuzzlesOverlapListener(curPuzzleCord, ((rec1, rec2) -> {
-      int factor;
+      double factorX;
+      double factorY;
       if (pane == Puzzle.getSelectedPuzzle().getView().getParent()) {
-        factor = DETECTION_ZONE_REDUCTION_FACTOR;
+        factorX = reductionFactorX;
+        factorY = reductionFactorY;
       }
       else {
-        factor = DETECTION_ZONE_REDUCTION_FACTOR_FOR_PUZZLE_PANE;
+        factorX = 0;
+        factorY = 0;
       }
-      boolean widthIsPositive = Math.min(rec1[2] - factor, rec2[2] - factor) >
-              Math.max(rec1[0] + factor, rec2[0] + factor);
+      boolean widthIsPositive = Math.min(rec1[2] - factorX, rec2[2] - factorX) >
+              Math.max(rec1[0] + factorX, rec2[0] + factorX);
 
-      boolean heightIsPositive = Math.min(rec1[3] - factor, rec2[3] - factor) >
-              Math.max(rec1[1] + factor, rec2[1] + factor);
+      boolean heightIsPositive = Math.min(rec1[3] - factorY, rec2[3] - factorY) >
+              Math.max(rec1[1] + factorY, rec2[1] + factorY);
 
       if(widthIsPositive && heightIsPositive) {
         changePropertiesOfOverlappedPuzzles(currentPuzzle);
